@@ -298,12 +298,28 @@ function App() {
     return color;
   };
 
+  // Function to determine if a color is bright
+  const isColorBright = (color) => {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate brightness using the luminance formula
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 175; // Threshold for brightness
+  };
+
   // Function to get color for a category
   const getCategoryColor = (category) => {
     if (!categoryColorsRef.current[category]) {
       categoryColorsRef.current[category] = getRandomColor();
     }
     return categoryColorsRef.current[category];
+  };
+
+  // Function to get label color based on background color
+  const getLabelColor = (backgroundColor) => {
+    return isColorBright(backgroundColor) ? 'black' : 'white';
   };
 
   const getStackedBarChartData = (period) => {
@@ -359,6 +375,88 @@ function App() {
 
   const stackedBarChartData = getStackedBarChartData(timePeriod);
 
+  const getStackedBarChartDataForSubcategories = (mainCategory) => {
+    const periodMap = {};
+    const now = new Date();
+    let startDate;
+
+    if (timePeriod === 'last30days') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+    } else if (timePeriod === 'last3months') {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    } else if (timePeriod === 'last6months') {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+    } else if (timePeriod === 'last12months') {
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    }
+
+    // Initialize periodMap with all dates in the selected range
+    for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+      let key;
+      if (timePeriod === 'last30days') {
+        key = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      } else {
+        key = d.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+      }
+      periodMap[key] = {};
+    }
+
+    receiptData.forEach(receipt => {
+      if (receipt.category === mainCategory) {
+        const date = new Date(receipt.date);
+        const key = date.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+
+        receipt.items.forEach(item => {
+          const subcategory = item.subcategory;
+          const total = item.price * item.quantity;
+
+          if (periodMap[key] !== undefined) {
+            if (!periodMap[key][subcategory]) {
+              periodMap[key][subcategory] = 0;
+            }
+            periodMap[key][subcategory] += total;
+            periodMap[key][subcategory] = parseFloat(periodMap[key][subcategory].toFixed(2));
+          }
+        });
+      }
+    });
+
+    // Sort the labels to ensure correct order
+    const labels = Object.keys(periodMap).sort();
+    const subcategories = new Set(receiptData.flatMap(receipt => receipt.category === mainCategory ? receipt.items.map(item => item.subcategory) : []));
+    const datasets = Array.from(subcategories).map(subcategory => {
+      const backgroundColor = getCategoryColor(subcategory);
+      return {
+        label: subcategory,
+        data: labels.map(label => periodMap[label][subcategory] || 0),
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        borderWidth: 1,
+        labelColor: getLabelColor(backgroundColor),
+      };
+    });
+
+    // Chart options to enhance label visibility
+    const chartOptions = {
+      plugins: {
+        datalabels: {
+          color: (context) => {
+            const backgroundColor = context.dataset.backgroundColor;
+            return isColorBright(backgroundColor) ? 'black' : 'white';
+          },
+          font: {
+            size: 14, // Increase font size
+            weight: 'bold',
+          },
+          textStrokeColor: 'rgba(0, 0, 0, 0.5)', // Add text stroke for better contrast
+          textStrokeWidth: 2,
+        },
+      },
+    };
+
+    return { labels, datasets, chartOptions };
+  };
+
   return (
     <div className="App">
       <h1>Receipt Scanner</h1>
@@ -399,24 +497,28 @@ function App() {
           ) : (
             <>
               <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-                  <select onChange={handleTimePeriodChange} value={timePeriod}>
-                    <option value="last30days">Last 30 Days</option>
-                    <option value="last3months">Last 3 Months</option>
-                    <option value="last6months">Last 6 Months</option>
-                    <option value="last12months">Last 12 Months</option>
-                  </select>
+                <select onChange={handleTimePeriodChange} value={timePeriod}>
+                  <option value="last30days">Last 30 Days</option>
+                  <option value="last3months">Last 3 Months</option>
+                  <option value="last6months">Last 6 Months</option>
+                  <option value="last12months">Last 12 Months</option>
+                </select>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                 <select onChange={handleBarPlotTypeChange} value={barPlotType}>
                   <option value="default">Default</option>
                   <option value="allCategories">All Categories</option>
+                  {mainCategories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
                 </select>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '400px', margin: '10px auto' }} tabIndex="0">
                 <BarChart
-                  labels={barPlotType === 'default' ? barChartData.labels : stackedBarChartData.labels}
-                  datasets={barPlotType === 'default' ? barChartData.datasets : stackedBarChartData.datasets}
-                  stacked={barPlotType === 'allCategories'}
+                  labels={barPlotType === 'default' ? barChartData.labels : (barPlotType === 'allCategories' ? stackedBarChartData.labels : getStackedBarChartDataForSubcategories(barPlotType).labels)}
+                  datasets={barPlotType === 'default' ? barChartData.datasets : (barPlotType === 'allCategories' ? stackedBarChartData.datasets : getStackedBarChartDataForSubcategories(barPlotType).datasets)}
+                  options={getStackedBarChartDataForSubcategories(barPlotType).chartOptions}
+                  stacked={barPlotType !== 'default'}
                 />
               </div>
             </>
