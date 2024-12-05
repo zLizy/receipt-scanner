@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Chart, LineElement, PointElement, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import ImageUploader from './components/ImageUploader';
@@ -40,6 +40,7 @@ function App() {
   const [chartType, setChartType] = useState('pie');
   const [barPlotType, setBarPlotType] = useState('default');
   const [showLine, setShowLine] = useState(false);
+  const [layout, setLayout] = useState('three-columns');
   const [sortOption, setSortOption] = useState('date-desc');
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
@@ -512,22 +513,30 @@ function App() {
     ? [...barChartData.datasets, lineDataset]
     : barChartData.datasets;
 
+  const handleLayoutChange = (e) => {
+    setLayout(e.target.value);
+  };
+
   const handleSortChange = (event) => {
     setSortOption(event.target.value);
   };
 
-  const sortedReceiptData = [...receiptData].sort((a, b) => {
-    if (sortOption === 'date-asc') {
-      return new Date(a.date) - new Date(b.date);
-    } else if (sortOption === 'date-desc') {
-      return new Date(b.date) - new Date(a.date);
-    } else if (sortOption === 'total-asc') {
-      return a.total - b.total;
-    } else if (sortOption === 'total-desc') {
-      return b.total - a.total;
-    }
-    return 0;
-  });
+  const sortedReceiptData = useMemo(() => {
+    return [...receiptData].sort((a, b) => {
+      switch (sortOption) {
+        case 'date-desc':
+          return new Date(b.date) - new Date(a.date);
+        case 'date-asc':
+          return new Date(a.date) - new Date(b.date);
+        case 'total-desc':
+          return b.total - a.total;
+        case 'total-asc':
+          return a.total - b.total;
+        default:
+          return 0;
+      }
+    });
+  }, [receiptData, sortOption]);
 
   return (
     <div className="App" style={{ margin: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -615,7 +624,12 @@ function App() {
           {receiptData && (
             <>
               <h2>Your Receipts</h2>
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '2px' }}>
+                <label htmlFor="layout-options">Layout: </label>
+                <select id="layout-options" value={layout} onChange={handleLayoutChange} style={{ marginLeft: '10px', marginRight: '20px' }}>
+                  <option value="three-columns">Three Columns</option>
+                  <option value="one-column">One Column</option>
+                </select>
                 <label htmlFor="sort-options">Sort by: </label>
                 <select id="sort-options" onChange={handleSortChange} value={sortOption}>
                   <option value="date-desc">Date (Newest First)</option>
@@ -628,6 +642,8 @@ function App() {
                 data={sortedReceiptData}
                 onEdit={onEdit}
                 onDelete={handleDelete}
+                layout={layout}
+                style={{ marginTop: '0px' }}
               />
             </>
           )}

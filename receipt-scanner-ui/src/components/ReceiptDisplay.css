@@ -1,22 +1,35 @@
+.App {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
 .receipt-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 20px;
-  justify-items: center;
+  background-color: #ffffff;
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .receipt-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  background-color: #fff;
   border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px;
+  padding: 10px;
+  margin: 0;
   width: 100%;
-  max-width: 300px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 8px;
+  box-sizing: border-box;
 }
 
 .receipt-details {
@@ -87,10 +100,11 @@ button {
   padding: 10px;
   margin-bottom: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .receipt-list.one-column .receipt-block {
-  width: 100%; /* Full width for one-column layout */
+  width: 100%;
 }
 
 .receipt-details {
@@ -116,5 +130,19 @@ button {
 }
 
 .layout-selector {
-  margin-bottom: 20px;
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.sort-selector {
+  display: inline-block;
+}
+
+.menu-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0 20px;
 }
