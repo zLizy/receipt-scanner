@@ -39,7 +39,21 @@ function PieChart({ labels, data }) {
 
   const options = {
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 20,
+        bottom: 20,
+        left: 20,
+        right: 20,
+      },
+    },
     plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          boxWidth: 15,
+        },
+      },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -67,7 +81,7 @@ function PieChart({ labels, data }) {
 
   return (
     <div className="pie-chart-container">
-      <Pie data={chartData} options={options} width={300} height={300} />
+      <Pie data={chartData} options={options} width={400} height={400} />
     </div>
   );
 }

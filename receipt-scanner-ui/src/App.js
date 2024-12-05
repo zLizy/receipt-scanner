@@ -40,6 +40,7 @@ function App() {
   const [chartType, setChartType] = useState('pie');
   const [barPlotType, setBarPlotType] = useState('default');
   const [showLine, setShowLine] = useState(false);
+  const [sortOption, setSortOption] = useState('date-desc');
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
 
@@ -65,6 +66,17 @@ function App() {
     setReceiptData(data);
   };
 
+  const isDuplicateReceipt = (newReceipt, existingReceipts) => {
+    return existingReceipts.some(receipt => {
+      const isSameTime = new Date(receipt.date).getTime() === new Date(newReceipt.date).getTime();
+      const isSamePlace = receipt.place === newReceipt.place;
+      const areItemsSimilar = receipt.items.length === newReceipt.items.length &&
+        receipt.items.every((item, index) => item.name === newReceipt.items[index].name && item.price === newReceipt.items[index].price);
+
+      return isSameTime && isSamePlace && areItemsSimilar;
+    });
+  };
+
   const handleImageUpload = async (imageFile) => {
     if (!authToken) {
       console.error('User is not authenticated or token is missing');
@@ -73,7 +85,13 @@ function App() {
 
     setLoading(true);
     const newData = await fetchReceiptData(imageFile);
-    setReceiptData((prevData) => [...prevData, newData]);
+
+    if (newData && !isDuplicateReceipt(newData, receiptData)) {
+      setReceiptData((prevData) => [...prevData, newData]);
+    } else {
+      console.warn('Duplicate receipt detected, not adding to the list.');
+    }
+
     setLoading(false);
   };
 
@@ -494,8 +512,25 @@ function App() {
     ? [...barChartData.datasets, lineDataset]
     : barChartData.datasets;
 
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
+
+  const sortedReceiptData = [...receiptData].sort((a, b) => {
+    if (sortOption === 'date-asc') {
+      return new Date(a.date) - new Date(b.date);
+    } else if (sortOption === 'date-desc') {
+      return new Date(b.date) - new Date(a.date);
+    } else if (sortOption === 'total-asc') {
+      return a.total - b.total;
+    } else if (sortOption === 'total-desc') {
+      return b.total - a.total;
+    }
+    return 0;
+  });
+
   return (
-    <div className="App">
+    <div className="App" style={{ margin: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <h1>Receipt Scanner</h1>
       {!user ? (
         <>
@@ -508,19 +543,19 @@ function App() {
             value={chartType}
             onChange={handleChartTypeChange}
             centered
-            style={{ margin: '20px 0' }}
+            style={{ margin: '20px 0', width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'center' }}
           >
             <Tab label="Pie Chart" value="pie" />
             <Tab label="Bar Chart" value="bar" />
           </Tabs>
           {chartType === 'pie' ? (
             <>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0', width: '100%', maxWidth: '600px' }}>
                 <button onClick={() => setView('category')}>Category</button>
                 <button onClick={() => setView('subcategory')}>Subcategory</button>
               </div>
               {view === 'subcategory' && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
                   <select onChange={handleCategoryChange} value={selectedCategory}>
                     <option value="all">All</option>
                     {mainCategories.map(category => (
@@ -533,7 +568,7 @@ function App() {
             </>
           ) : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
                 <select onChange={handleTimePeriodChange} value={timePeriod}>
                   <option value="last30days">Last 30 Days</option>
                   <option value="last3months">Last 3 Months</option>
@@ -541,7 +576,7 @@ function App() {
                   <option value="last12months">Last 12 Months</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
                 <select onChange={handleBarPlotTypeChange} value={barPlotType}>
                   <option value="default">Default</option>
                   <option value="allCategories">All Categories</option>
@@ -551,7 +586,7 @@ function App() {
                 </select>
               </div>
               {barPlotType === 'default' && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
                   <button onClick={handleToggleLine}>
                     {showLine ? 'Hide Line' : 'Show Line'}
                   </button>
@@ -574,14 +609,27 @@ function App() {
               </div>
             </>
           )}
+          <h2>Upload Your Receipt</h2>
           <ImageUploader onUpload={handleImageUpload} />
           {loading && <LoadingSpinner />}
           {receiptData && (
-            <ReceiptDisplay
-              data={receiptData}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-            />
+            <>
+              <h2>Your Receipts</h2>
+              <div style={{ marginBottom: '20px' }}>
+                <label htmlFor="sort-options">Sort by: </label>
+                <select id="sort-options" onChange={handleSortChange} value={sortOption}>
+                  <option value="date-desc">Date (Newest First)</option>
+                  <option value="date-asc">Date (Oldest First)</option>
+                  <option value="total-desc">Total Amount (High to Low)</option>
+                  <option value="total-asc">Total Amount (Low to High)</option>
+                </select>
+              </div>
+              <ReceiptDisplay
+                data={sortedReceiptData}
+                onEdit={onEdit}
+                onDelete={handleDelete}
+              />
+            </>
           )}
         </>
       )}

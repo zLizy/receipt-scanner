@@ -14,6 +14,8 @@ function formatDate(dateString) {
 function ReceiptDisplay({ data, onEdit, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentReceipt, setCurrentReceipt] = useState(null);
+  const [expandedReceiptIndex, setExpandedReceiptIndex] = useState(null);
+  const [layout, setLayout] = useState('three-columns');
 
   const handleEditClick = (receipt) => {
     setIsEditing(true);
@@ -42,6 +44,14 @@ function ReceiptDisplay({ data, onEdit, onDelete }) {
     setCurrentReceipt(null);
   };
 
+  const toggleShowMore = (index) => {
+    setExpandedReceiptIndex(expandedReceiptIndex === index ? null : index);
+  };
+
+  const handleLayoutChange = (e) => {
+    setLayout(e.target.value);
+  };
+
   const existingCategories = [...new Set(data.map(receipt => receipt.category))];
   const existingSubcategories = [...new Set(data.flatMap(receipt => receipt.items.map(item => item.subcategory)))];
 
@@ -51,6 +61,13 @@ function ReceiptDisplay({ data, onEdit, onDelete }) {
 
   return (
     <div className="receipt-container">
+      <div className="layout-selector">
+        <label htmlFor="layout">Layout: </label>
+        <select id="layout" value={layout} onChange={handleLayoutChange}>
+          <option value="three-columns">Three Columns</option>
+          <option value="one-column">One Column</option>
+        </select>
+      </div>
       {isEditing ? (
         <form onSubmit={handleFormSubmit}>
           <label>
@@ -145,30 +162,41 @@ function ReceiptDisplay({ data, onEdit, onDelete }) {
           <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
         </form>
       ) : (
-        data.map((receipt, index) => (
-          <div key={index} className="receipt-block">
-            <h2 className="receipt-date">{receipt.date ? formatDate(receipt.date) : 'N/A'}</h2>
-            <div className="receipt-details">
-              <p><strong>Category:</strong> {receipt.category || 'N/A'}</p>
-              <p><strong>Place:</strong> {receipt.place || 'N/A'}</p>
-              <p><strong>Total:</strong> ${receipt.total ? parseFloat(receipt.total).toFixed(2) : '0.00'}</p>
+        <div className={`receipt-list ${layout}`}>
+          {data.map((receipt, index) => (
+            <div key={index} className="receipt-block">
+              <h2 className="receipt-date">{receipt.date ? formatDate(receipt.date) : 'N/A'}</h2>
+              <div className="receipt-details">
+                <p><strong>Category:</strong> {receipt.category || 'N/A'}</p>
+                <p><strong>Place:</strong> {receipt.place || 'N/A'}</p>
+                <p><strong>Total:</strong> ${receipt.total ? parseFloat(receipt.total).toFixed(2) : '0.00'}</p>
+                {expandedReceiptIndex === index && (
+                  <div className="receipt-items">
+                    <p><strong>Items:</strong></p>
+                    <ul>
+                      {receipt.items && receipt.items.length > 0 ? (
+                        receipt.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className={layout === 'one-column' ? 'item-row' : ''}>
+                            {item.subcategory ? `${item.subcategory} - ` : ''}{item.name}: ${item.price ? item.price.toFixed(2) : '0.00'} x {item.quantity}
+                          </li>
+                        ))
+                      ) : (
+                        <li>No items available</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="button-row">
+                <button onClick={() => toggleShowMore(index)}>
+                  {expandedReceiptIndex === index ? 'Show less' : 'Show more'}
+                </button>
+                <button onClick={() => handleEditClick(receipt)}>Edit</button>
+                <button onClick={() => onDelete(receipt.id)}>Delete</button>
+              </div>
             </div>
-            <h3>Items:</h3>
-            <ul>
-              {receipt.items && receipt.items.length > 0 ? (
-                receipt.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>
-                    {item.subcategory ? `${item.subcategory} - ` : ''}{item.name}: ${item.price ? item.price.toFixed(2) : '0.00'} x {item.quantity}
-                  </li>
-                ))
-              ) : (
-                <li>No items available</li>
-              )}
-            </ul>
-            <button onClick={() => handleEditClick(receipt)}>Edit</button>
-            <button onClick={() => onDelete(receipt.id)}>Delete</button>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
