@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './ReceiptDisplay.css';
 
+const RECEIPTS_PER_PAGE = 30;
+
 function formatDate(dateString) {
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -13,6 +15,9 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentReceipt, setCurrentReceipt] = useState(null);
   const [expandedReceiptIndex, setExpandedReceiptIndex] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(data.length / RECEIPTS_PER_PAGE);
 
   const handleEditClick = (receipt) => {
     setIsEditing(true);
@@ -45,12 +50,21 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
     setExpandedReceiptIndex(expandedReceiptIndex === index ? null : index);
   };
 
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   const existingCategories = [...new Set(data.map(receipt => receipt.category))];
   const existingSubcategories = [...new Set(data.flatMap(receipt => receipt.items.map(item => item.subcategory)))];
 
   if (!data || data.length === 0) {
     return <p>No receipt data available.</p>;
   }
+
+  const startIndex = (currentPage - 1) * RECEIPTS_PER_PAGE;
+  const currentReceipts = data.slice(startIndex, startIndex + RECEIPTS_PER_PAGE);
 
   return (
     <div className="receipt-container">
@@ -149,7 +163,7 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
         </form>
       ) : (
         <div className={`receipt-list ${layout}`}>
-          {data.map((receipt, index) => (
+          {currentReceipts.map((receipt, index) => (
             <div key={index} className="receipt-block">
               <h2 className="receipt-date">{receipt.date ? formatDate(receipt.date) : 'N/A'}</h2>
               <div className="receipt-details">
@@ -163,7 +177,7 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
                   <ul>
                     {receipt.items && receipt.items.length > 0 ? (
                       receipt.items.map((item, itemIndex) => (
-                        <li key={itemIndex}>
+                        <li key={itemIndex} className={layout === 'one-column' ? 'item-row' : ''}>
                           {item.subcategory ? `${item.subcategory} - ` : ''}{item.name}: ${item.price ? item.price.toFixed(2) : '0.00'} x {item.quantity}
                         </li>
                       ))
@@ -184,6 +198,11 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
           ))}
         </div>
       )}
+      <div className="pagination">
+        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+      </div>
     </div>
   );
 }

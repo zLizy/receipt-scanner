@@ -42,7 +42,13 @@
   justify-content: center;
   align-items: center;
   width: 300px;
-  height: 300px;
-  margin: 0 auto;
+  height: auto;
+  margin: 0;
   position: relative;
+}
+
+.plot-container {
+  margin: 5px auto;
+  width: 80%;
+  max-width: 600px;
 }

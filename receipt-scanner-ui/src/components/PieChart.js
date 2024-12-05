@@ -41,10 +41,10 @@ function PieChart({ labels, data }) {
     maintainAspectRatio: false,
     layout: {
       padding: {
-        top: 20,
-        bottom: 20,
-        left: 20,
-        right: 20,
+        top: 0,
+        bottom: 0,
+        left: 10,
+        right: 10,
       },
     },
     plugins: {
@@ -80,8 +80,8 @@ function PieChart({ labels, data }) {
   };
 
   return (
-    <div className="pie-chart-container">
-      <Pie data={chartData} options={options} width={400} height={400} />
+    <div className="pie-chart-container" style={{ backgroundColor: '#ffffff' }}>
+      <Pie data={chartData} options={options} width={440} height={330} />
     </div>
   );
 }

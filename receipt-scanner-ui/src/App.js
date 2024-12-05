@@ -539,7 +539,7 @@ function App() {
   }, [receiptData, sortOption]);
 
   return (
-    <div className="App" style={{ margin: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className="App" style={{ margin: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <h1>Receipt Scanner</h1>
       {!user ? (
         <>
@@ -552,19 +552,19 @@ function App() {
             value={chartType}
             onChange={handleChartTypeChange}
             centered
-            style={{ margin: '20px 0', width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'center' }}
+            style={{ margin: '10px 0', width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'center' }}
           >
             <Tab label="Pie Chart" value="pie" />
             <Tab label="Bar Chart" value="bar" />
           </Tabs>
           {chartType === 'pie' ? (
             <>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0', width: '100%', maxWidth: '600px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
                 <button onClick={() => setView('category')}>Category</button>
                 <button onClick={() => setView('subcategory')}>Subcategory</button>
               </div>
               {view === 'subcategory' && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '5px 0', width: '100%', maxWidth: '600px' }}>
                   <select onChange={handleCategoryChange} value={selectedCategory}>
                     <option value="all">All</option>
                     {mainCategories.map(category => (
@@ -573,11 +573,13 @@ function App() {
                   </select>
                 </div>
               )}
-              <PieChart labels={labels} data={data} tabIndex="0" />
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '5px 0', width: '100%', maxWidth: '600px' }}>
+                <PieChart labels={labels} data={data} tabIndex="0" />
+              </div>
             </>
           ) : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '5px 0', width: '100%', maxWidth: '600px' }}>
                 <select onChange={handleTimePeriodChange} value={timePeriod}>
                   <option value="last30days">Last 30 Days</option>
                   <option value="last3months">Last 3 Months</option>
@@ -585,7 +587,7 @@ function App() {
                   <option value="last12months">Last 12 Months</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '5px 0', width: '100%', maxWidth: '600px' }}>
                 <select onChange={handleBarPlotTypeChange} value={barPlotType}>
                   <option value="default">Default</option>
                   <option value="allCategories">All Categories</option>
@@ -595,7 +597,7 @@ function App() {
                 </select>
               </div>
               {barPlotType === 'default' && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', width: '100%', maxWidth: '600px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '5px 0', width: '100%', maxWidth: '600px' }}>
                   <button onClick={handleToggleLine}>
                     {showLine ? 'Hide Line' : 'Show Line'}
                   </button>
