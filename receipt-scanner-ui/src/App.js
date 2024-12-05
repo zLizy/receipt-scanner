@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import ImageUploader from './components/ImageUploader';
 import ReceiptDisplay from './components/ReceiptDisplay';
 import Login from './components/Login';
@@ -36,6 +36,9 @@ function App() {
   const [barPlotType, setBarPlotType] = useState('default');
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
+
+  // Ref to store category colors
+  const categoryColorsRef = useRef({});
 
   const handleLogin = (userData) => {
     if (!userData || !userData.token) {
@@ -294,7 +297,15 @@ function App() {
     }
     return color;
   };
-  
+
+  // Function to get color for a category
+  const getCategoryColor = (category) => {
+    if (!categoryColorsRef.current[category]) {
+      categoryColorsRef.current[category] = getRandomColor();
+    }
+    return categoryColorsRef.current[category];
+  };
+
   const getStackedBarChartData = (period) => {
     const periodMap = {};
     const now = new Date();
@@ -310,11 +321,6 @@ function App() {
       startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
     }
 
-    // // Initialize periodMap with all dates in the selected range
-    // for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-    //   let key = d.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
-    //   periodMap[key] = {};
-    // }
     // Initialize periodMap with all dates in the selected range
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
       let key;
@@ -345,7 +351,7 @@ function App() {
     const datasets = mainCategories.map(category => ({
       label: category,
       data: labels.map(label => periodMap[label][category] || 0),
-      backgroundColor: getRandomColor(), // Function to generate random colors
+      backgroundColor: getCategoryColor(category), // Use static color for each category
     }));
 
     return { labels, datasets };
