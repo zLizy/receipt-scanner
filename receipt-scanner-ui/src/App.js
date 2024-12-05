@@ -33,6 +33,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [timePeriod, setTimePeriod] = useState('daily');
   const [chartType, setChartType] = useState('pie');
+  const [barPlotType, setBarPlotType] = useState('default');
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
 
@@ -280,6 +281,78 @@ function App() {
     setChartType(newValue);
   };
 
+  const handleBarPlotTypeChange = (event) => {
+    setBarPlotType(event.target.value);
+  };
+
+  // Function to generate random colors
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+  
+  const getStackedBarChartData = (period) => {
+    const periodMap = {};
+    const now = new Date();
+    let startDate;
+
+    if (period === 'last30days') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+    } else if (period === 'last3months') {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    } else if (period === 'last6months') {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+    } else if (period === 'last12months') {
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    }
+
+    // // Initialize periodMap with all dates in the selected range
+    // for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+    //   let key = d.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+    //   periodMap[key] = {};
+    // }
+    // Initialize periodMap with all dates in the selected range
+    for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+      let key;
+      if (period === 'last30days') {
+        key = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      } else {
+        key = d.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+      }
+      periodMap[key] = {};
+    }
+
+    receiptData.forEach(receipt => {
+      const date = new Date(receipt.date);
+      const key = date.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+      const category = receipt.category;
+      const total = parseFloat(receipt.total) || 0;
+
+      if (periodMap[key] !== undefined) {
+        if (!periodMap[key][category]) {
+          periodMap[key][category] = 0;
+        }
+        periodMap[key][category] += total;
+      }
+    });
+
+    // Sort the labels to ensure correct order
+    const labels = Object.keys(periodMap).sort();
+    const datasets = mainCategories.map(category => ({
+      label: category,
+      data: labels.map(label => periodMap[label][category] || 0),
+      backgroundColor: getRandomColor(), // Function to generate random colors
+    }));
+
+    return { labels, datasets };
+  };
+
+  const stackedBarChartData = getStackedBarChartData(timePeriod);
+
   return (
     <div className="App">
       <h1>Receipt Scanner</h1>
@@ -327,10 +400,19 @@ function App() {
                     <option value="last12months">Last 12 Months</option>
                   </select>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '400px', margin: '10px auto' }} tabIndex="0">
-                <BarChart labels={barChartData.labels} datasets={barChartData.datasets} stacked={false} />
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                <select onChange={handleBarPlotTypeChange} value={barPlotType}>
+                  <option value="default">Default</option>
+                  <option value="allCategories">All Categories</option>
+                </select>
               </div>
-              
+              <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '400px', margin: '10px auto' }} tabIndex="0">
+                <BarChart
+                  labels={barPlotType === 'default' ? barChartData.labels : stackedBarChartData.labels}
+                  datasets={barPlotType === 'default' ? barChartData.datasets : stackedBarChartData.datasets}
+                  stacked={barPlotType === 'allCategories'}
+                />
+              </div>
             </>
           )}
           <ImageUploader onUpload={handleImageUpload} />
