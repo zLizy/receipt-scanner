@@ -6,6 +6,8 @@ import Register from './components/Register';
 import LoadingSpinner from './components/LoadingSpinner';
 import PieChart from './components/PieChart';
 import BarChart from './components/BarChart';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 function CategoryMapDisplay({ categoryMap }) {
   return (
@@ -30,6 +32,7 @@ function App() {
   const [view, setView] = useState('category');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [timePeriod, setTimePeriod] = useState('daily');
+  const [chartType, setChartType] = useState('pie');
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
 
@@ -223,7 +226,12 @@ function App() {
 
     // Initialize periodMap with all dates in the selected range
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-      const key = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      let key;
+      if (period === 'last30days') {
+        key = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      } else {
+        key = d.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+      }
       periodMap[key] = 0;
     }
 
@@ -231,7 +239,12 @@ function App() {
 
     receiptData.forEach(receipt => {
       const date = new Date(receipt.date);
-      const key = date.toISOString().split('T')[0];
+      let key;
+      if (period === 'last30days') {
+        key = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      } else {
+        key = date.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
+      }
 
       if (periodMap[key] !== undefined) {
         const total = parseFloat(receipt.total) || 0;
@@ -263,6 +276,10 @@ function App() {
     ],
   };
 
+  const handleChartTypeChange = (event, newValue) => {
+    setChartType(newValue);
+  };
+
   return (
     <div className="App">
       <h1>Receipt Scanner</h1>
@@ -273,39 +290,49 @@ function App() {
         </>
       ) : (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            <button onClick={() => setView('category')}>Category</button>
-            <button onClick={() => setView('subcategory')}>Subcategory</button>
-          </div>
-          {view === 'subcategory' && (
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-              <select onChange={handleCategoryChange} value={selectedCategory}>
-                <option value="all">All</option>
-                {mainCategories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
+          <Tabs
+            value={chartType}
+            onChange={handleChartTypeChange}
+            centered
+            style={{ margin: '20px 0' }}
+          >
+            <Tab label="Pie Chart" value="pie" />
+            <Tab label="Bar Chart" value="bar" />
+          </Tabs>
+          {chartType === 'pie' ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                <button onClick={() => setView('category')}>Category</button>
+                <button onClick={() => setView('subcategory')}>Subcategory</button>
+              </div>
+              {view === 'subcategory' && (
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                  <select onChange={handleCategoryChange} value={selectedCategory}>
+                    <option value="all">All</option>
+                    {mainCategories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <PieChart labels={labels} data={data} tabIndex="0" />
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                  <select onChange={handleTimePeriodChange} value={timePeriod}>
+                    <option value="last30days">Last 30 Days</option>
+                    <option value="last3months">Last 3 Months</option>
+                    <option value="last6months">Last 6 Months</option>
+                    <option value="last12months">Last 12 Months</option>
+                  </select>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '400px', margin: '10px auto' }} tabIndex="0">
+                <BarChart labels={barChartData.labels} datasets={barChartData.datasets} stacked={false} />
+              </div>
+              
+            </>
           )}
-          <PieChart labels={labels} data={data} tabIndex="0" />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-            <select onChange={handleTimePeriodChange} value={timePeriod}>
-              <option value="last30days">Last 30 Days</option>
-              <option value="last3months">Last 3 Months</option>
-              <option value="last6months">Last 6 Months</option>
-              <option value="last12months">Last 12 Months</option>
-            </select>
-          </div>
-          {/* <div>
-            <h2>Time Period Data</h2>
-            {barLabels.map((label, index) => (
-              <p key={label}>{label}: ${barData[index].toFixed(2)}</p>
-            ))}
-          </div> */}
-          <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '500px', margin: '10px auto' }} tabIndex="0">
-            <BarChart labels={barChartData.labels} datasets={barChartData.datasets} stacked={false} />
-          </div>
-          
           <ImageUploader onUpload={handleImageUpload} />
           {loading && <LoadingSpinner />}
           {receiptData && (
@@ -315,7 +342,6 @@ function App() {
               onDelete={handleDelete}
             />
           )}
-          
         </>
       )}
     </div>
