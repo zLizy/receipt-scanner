@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { Chart, LineElement, PointElement, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import ImageUploader from './components/ImageUploader';
 import ReceiptDisplay from './components/ReceiptDisplay';
 import Login from './components/Login';
@@ -8,6 +10,9 @@ import PieChart from './components/PieChart';
 import BarChart from './components/BarChart';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+
+// Register the components
+Chart.register(LineElement, PointElement, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
 function CategoryMapDisplay({ categoryMap }) {
   return (
@@ -34,6 +39,7 @@ function App() {
   const [timePeriod, setTimePeriod] = useState('daily');
   const [chartType, setChartType] = useState('pie');
   const [barPlotType, setBarPlotType] = useState('default');
+  const [showLine, setShowLine] = useState(false);
 
   const mainCategories = [...new Set(receiptData.map(receipt => receipt.category))];
 
@@ -267,6 +273,7 @@ function App() {
 
   const { labels: barLabels, data: barData } = getTimePeriodData(timePeriod);
 
+
   const barChartData = {
     labels: barLabels,
     datasets: [
@@ -288,14 +295,24 @@ function App() {
     setBarPlotType(event.target.value);
   };
 
-  // Function to generate random colors
+  // Predefined color palette from Color Hunt
+  const colorPalette = [
+    '#FF6B6B', // Red
+    '#FFD93D', // Yellow
+    '#6BCB77', // Green
+    '#4D96FF', // Blue
+    '#FF6F91', // Pink
+    '#845EC2', // Purple
+    '#FFC75F', // Orange
+    '#F9F871', // Light Yellow
+    '#00C9A7', // Teal
+    '#C34A36', // Brown
+  ];
+
+  // Function to get a random color from the predefined palette
   const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+    const randomIndex = Math.floor(Math.random() * colorPalette.length);
+    return colorPalette[randomIndex];
   };
 
   // Function to determine if a color is bright
@@ -457,6 +474,26 @@ function App() {
     return { labels, datasets, chartOptions };
   };
 
+  const handleToggleLine = () => {
+    setShowLine(prevShowLine => !prevShowLine);
+  };
+
+  const lineDataset = {
+    ...(showLine ? {} : { label: 'Total Spending Line' }),
+    data: barData,
+    type: 'line',
+    borderColor: 'rgba(255, 99, 132, 1)',
+    borderWidth: 2,
+    fill: false,
+    datalabels: {
+      display: false, // Disable data labels for the line
+    },
+  };
+
+  const combinedDatasets = showLine
+    ? [...barChartData.datasets, lineDataset]
+    : barChartData.datasets;
+
   return (
     <div className="App">
       <h1>Receipt Scanner</h1>
@@ -513,11 +550,25 @@ function App() {
                   ))}
                 </select>
               </div>
+              {barPlotType === 'default' && (
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                  <button onClick={handleToggleLine}>
+                    {showLine ? 'Hide Line' : 'Show Line'}
+                  </button>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'center', width: '80%', height: '400px', margin: '10px auto' }} tabIndex="0">
                 <BarChart
                   labels={barPlotType === 'default' ? barChartData.labels : (barPlotType === 'allCategories' ? stackedBarChartData.labels : getStackedBarChartDataForSubcategories(barPlotType).labels)}
-                  datasets={barPlotType === 'default' ? barChartData.datasets : (barPlotType === 'allCategories' ? stackedBarChartData.datasets : getStackedBarChartDataForSubcategories(barPlotType).datasets)}
-                  options={getStackedBarChartDataForSubcategories(barPlotType).chartOptions}
+                  datasets={barPlotType === 'default' ? combinedDatasets : (barPlotType === 'allCategories' ? stackedBarChartData.datasets : getStackedBarChartDataForSubcategories(barPlotType).datasets)}
+                  options={{
+                    ...getStackedBarChartDataForSubcategories(barPlotType).chartOptions,
+                    plugins: {
+                      datalabels: {
+                        display: (context) => context.dataset.type !== 'line', // Only display labels for non-line datasets
+                      },
+                    },
+                  }}
                   stacked={barPlotType !== 'default'}
                 />
               </div>
