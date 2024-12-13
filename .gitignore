@@ -1,0 +1,5 @@
+receipt-scanner-ios
+receipt-scanner/
+receipt-scanner-server/node_modules
+receipt-scanner-ui/node_modules
+.env

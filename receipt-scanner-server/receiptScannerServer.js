@@ -2,13 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { Client } = require('pg');
+const { MongoClient } = require('mongodb'); // Import MongoDB client
 const { exec } = require('child_process');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Configure multer to save files to 'uploads/' directory
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg'); // Assuming PostgreSQL
+// const { Pool } = require('pg'); // Assuming PostgreSQL
 const { login } = require('./auth');
 
 class ReceiptScannerApp {
@@ -59,34 +59,19 @@ class ReceiptScannerApp {
 
 class Database {
     constructor() {
-        this.client = new Client({
-            user: 'lizy',
-            host: 'localhost',
-            database: 'scanner',
-            password: '1234',
-            port: 5432,
-        });
-        this.client.connect();
+        const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@bonjecluster.gouxx.mongodb.net/?retryWrites=true&w=majority&appName=BonjeCluster`; // MongoDB connection string
+        this.client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+        this.client.connect().then(() => {
+            this.db = this.client.db('scanner'); // Connect to the 'scanner' database
+            this.receipts = this.db.collection('receipts'); // Use the 'receipts' collection
+            console.log('Connected to MongoDB');
+        }).catch(err => console.error('MongoDB connection error:', err));
     }
 
     async save(receiptData) {
-        const query = `
-            INSERT INTO receipts (user_id, date, items, total, place, category, image_data)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id;
-        `;
-        const values = [
-            receiptData.user_id, 
-            receiptData.date, 
-            JSON.stringify(receiptData.items), 
-            receiptData.total, 
-            receiptData.place,
-            receiptData.category,
-            receiptData.image_data
-        ];
         try {
-            const res = await this.client.query(query, values);
-            console.log('Receipt saved with ID:', res.rows[0].id);
+            const result = await this.receipts.insertOne(receiptData);
+            console.log('Receipt saved with ID:', result.insertedId);
         } catch (err) {
             console.error('Error saving receipt:', err);
         }
@@ -121,48 +106,58 @@ app.post('/api/scan-receipt', upload.single('image'), authenticateToken, async (
     }
 });
 
-const pool = new Pool({
-    user: 'lizy',
-    host: 'localhost',
-    database: 'scanner',
-    password: '1234',
-    port: 5432,
+// Fetch user-specific data
+app.get('/api/user-data', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    try {
+        const data = await receiptScanner.database.receipts.find({ user_id: userId }).toArray();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-// Function to create tables if they don't exist
-async function createTables() {
-  const createUsersTableQuery = `
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL
-    );
-  `;
+// Update receipt data
+app.put('/api/update-receipts/:id', authenticateToken, async (req, res) => {
+    const receiptId = req.params.id;
+    const { date, category, place, total, items } = req.body;
 
-  const createReceiptsTableQuery = `
-    CREATE TABLE IF NOT EXISTS receipts (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id),
-      date DATE,
-      items JSONB,
-      total NUMERIC,
-      place VARCHAR(255),
-      category VARCHAR(255),
-      image_data BYTEA
-    );
-  `;
+    console.log('Update request received for receipt ID:', receiptId);
 
-  try {
-    await pool.query(createUsersTableQuery);
-    await pool.query(createReceiptsTableQuery);
-    console.log('Tables created or verified successfully.');
-  } catch (error) {
-    console.error('Error creating tables:', error);
-  }
-}
+    try {
+        const result = await receiptScanner.database.receipts.updateOne(
+            { _id: new MongoClient.ObjectID(receiptId), user_id: req.user.userId },
+            { $set: { date, category, place, total, items } }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'Receipt not found or not authorized' });
+        }
+        res.json({ message: 'Receipt updated successfully' });
+    } catch (error) {
+        console.error('Error updating receipt:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// Call the function to create tables when the server starts
-createTables();
+app.delete('/api/delete-receipts/:id', authenticateToken, async (req, res) => {
+    const receiptId = req.params.id;
+    const userId = req.user.userId;
+
+    try {
+        const result = await receiptScanner.database.receipts.deleteOne({ _id: new MongoClient.ObjectID(receiptId), user_id: userId });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Receipt not found or not authorized' });
+        }
+
+        console.log('Receipt deleted successfully:', receiptId);
+        res.status(204).send(); // No content response
+    } catch (error) {
+        console.error('Error deleting receipt:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Register a new user
 app.post('/api/register', async (req, res) => {
@@ -181,14 +176,6 @@ app.post('/api/register', async (req, res) => {
 // Login a user
 app.post('/api/login', login);
 
-// Fetch user-specific data
-app.get('/api/user-data', authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const data = await pool.query('SELECT * FROM receipts WHERE user_id = $1', [userId]);
-//   console.log('User data:', data.rows);
-  res.json(data.rows);
-});
-
 // Upload a new receipt
 app.post('/api/upload-receipt', authenticateToken, async (req, res) => {
   const userId = req.user.userId;
@@ -197,61 +184,6 @@ app.post('/api/upload-receipt', authenticateToken, async (req, res) => {
   // Process and store the image
   await pool.query('INSERT INTO receipts (user_id, image_data) VALUES ($1, $2)', [userId, image]);
   res.status(201).send('Receipt uploaded');
-});
-
-// Update receipt data
-app.put('/api/update-receipts/:id', authenticateToken, async (req, res) => {
-    const receiptId = req.params.id;
-    const { date, category, place, total, items } = req.body;
-
-    console.log('Update request received for receipt ID:', receiptId);
-    // console.log('Request body:', req.body);
-
-    const query = `
-        UPDATE receipts
-        SET date = $1, category = $2, place = $3, total = $4, items = $5
-        WHERE id = $6 AND user_id = $7
-        RETURNING *;
-    `;
-    const values = [
-        date,
-        category,
-        place,
-        total,
-        JSON.stringify(items),
-        receiptId,
-        req.user.userId
-    ];
-
-    try {
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Receipt not found or not authorized' });
-        }
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error updating receipt:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.delete('/api/delete-receipts/:id', authenticateToken, async (req, res) => {
-  const receiptId = req.params.id;
-  const userId = req.user.userId;
-
-  try {
-    const result = await pool.query('DELETE FROM receipts WHERE id = $1 AND user_id = $2 RETURNING id', [receiptId, userId]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Receipt not found or not authorized' });
-    }
-
-    console.log('Receipt deleted successfully:', result.rows[0].id);
-    res.status(204).send(); // No content response
-  } catch (error) {
-    console.error('Error deleting receipt:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
 });
 
 function authenticateToken(req, res, next) {
