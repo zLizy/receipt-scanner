@@ -2,13 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { MongoClient } = require('mongodb'); // Import MongoDB client
+const { MongoClient, ObjectId } = require('mongodb'); // Import MongoDB client and ObjectId
 const { exec } = require('child_process');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Configure multer to save files to 'uploads/' directory
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const { Pool } = require('pg'); // Assuming PostgreSQL
 const { login } = require('./auth');
 
 class ReceiptScannerApp {
@@ -16,11 +15,11 @@ class ReceiptScannerApp {
         this.database = new Database();
     }
 
-    async analyzeImageWithModel(imagePath) {
+    async analyzeImageWithModel(imagePath, language, country) {
         const pythonScript = 'python3.9 process_image.py'; // Adjust if using a different Python version or path
 
         return new Promise((resolve, reject) => {
-            exec(`${pythonScript} ${imagePath}`, (error, stdout, stderr) => {
+            exec(`${pythonScript} ${imagePath} ${language} ${country}`, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error executing Python script: ${error.message}`);
                     return reject(error);
@@ -64,6 +63,21 @@ class Database {
         this.client.connect().then(() => {
             this.db = this.client.db('scanner'); // Connect to the 'scanner' database
             this.receipts = this.db.collection('receipts'); // Use the 'receipts' collection
+            this.users = this.db.collection('users'); // Use the 'users' collection
+
+            // Ensure the collection exists by attempting to create it
+            this.db.createCollection('receipts').catch(err => {
+                if (err.codeName !== 'NamespaceExists') {
+                    console.error('Error creating receipts collection:', err);
+                }
+            });
+
+            this.db.createCollection('users').catch(err => {
+                if (err.codeName !== 'NamespaceExists') {
+                    console.error('Error creating users collection:', err);
+                }
+            });
+
             console.log('Connected to MongoDB');
         }).catch(err => console.error('MongoDB connection error:', err));
     }
@@ -88,7 +102,9 @@ const receiptScanner = new ReceiptScannerApp();
 app.post('/api/scan-receipt', upload.single('image'), authenticateToken, async (req, res) => {
     try {
         const imagePath = req.file.path; // Get the path of the uploaded file
-        const receiptData = await receiptScanner.analyzeImageWithModel(imagePath);
+        const { language, country } = req.body; // Get language and country from the request body
+
+        const receiptData = await receiptScanner.analyzeImageWithModel(imagePath, language, country);
         
         console.log('User ID:', req.user.userId);
         receiptData.user_id = req.user.userId;
@@ -107,7 +123,7 @@ app.post('/api/scan-receipt', upload.single('image'), authenticateToken, async (
 });
 
 // Fetch user-specific data
-app.get('/api/user-data', authenticateToken, async (req, res) => {
+app.get('/api/receipts-data', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     try {
         const data = await receiptScanner.database.receipts.find({ user_id: userId }).toArray();
@@ -123,11 +139,17 @@ app.put('/api/update-receipts/:id', authenticateToken, async (req, res) => {
     const receiptId = req.params.id;
     const { date, category, place, total, items } = req.body;
 
-    console.log('Update request received for receipt ID:', receiptId);
+    // console.log('Update request received for receipt ID:', receiptId);
+
+    // Validate receiptId
+    if (!ObjectId.isValid(receiptId)) {
+        console.error('Invalid receipt ID:', receiptId);
+        return res.status(400).json({ error: 'Invalid receipt ID' });
+    }
 
     try {
         const result = await receiptScanner.database.receipts.updateOne(
-            { _id: new MongoClient.ObjectID(receiptId), user_id: req.user.userId },
+            { _id: new ObjectId(receiptId), user_id: req.user.userId },
             { $set: { date, category, place, total, items } }
         );
         if (result.matchedCount === 0) {
@@ -145,7 +167,7 @@ app.delete('/api/delete-receipts/:id', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
 
     try {
-        const result = await receiptScanner.database.receipts.deleteOne({ _id: new MongoClient.ObjectID(receiptId), user_id: userId });
+        const result = await receiptScanner.database.receipts.deleteOne({ _id: new ObjectId(receiptId), user_id: userId });
 
         if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Receipt not found or not authorized' });
@@ -164,9 +186,9 @@ app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Store user in the database
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
-    res.status(201).json({ message: 'User registered' }); // Send JSON response
+    // Store user in the MongoDB database
+    const result = await receiptScanner.database.users.insertOne({ username, password: hashedPassword });
+    res.status(201).json({ message: 'User registered', userId: result.insertedId }); // Send JSON response
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -174,7 +196,26 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Login a user
-app.post('/api/login', login);
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await receiptScanner.database.users.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Upload a new receipt
 app.post('/api/upload-receipt', authenticateToken, async (req, res) => {
@@ -182,7 +223,7 @@ app.post('/api/upload-receipt', authenticateToken, async (req, res) => {
 //   const userId = req.user.username;
   const { image } = req.body; // Assuming image is sent in the request body
   // Process and store the image
-  await pool.query('INSERT INTO receipts (user_id, image_data) VALUES ($1, $2)', [userId, image]);
+  // await pool.query('INSERT INTO receipts (user_id, image_data) VALUES ($1, $2)', [userId, image]);
   res.status(201).send('Receipt uploaded');
 });
 
@@ -208,11 +249,26 @@ function authenticateToken(req, res, next) {
             console.log('Token verification failed:', err);
             return res.status(403).json({ error: 'Token verification failed' });
         }
-        console.log('Token verified, user:', user);
+        console.log('Token verified.');
         req.user = user;
         next();
     });
 }
+
+// Fetch user profile data
+app.get('/api/user-profile', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    try {
+        const user = await receiptScanner.database.users.findOne({ _id: new ObjectId(userId) }, { projection: { username: 1, email: 1 } });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

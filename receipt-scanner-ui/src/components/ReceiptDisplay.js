@@ -59,6 +59,15 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
   const existingCategories = [...new Set(data.map(receipt => receipt.category))];
   const existingSubcategories = [...new Set(data.flatMap(receipt => receipt.items.map(item => item.subcategory)))];
 
+  const handleDeleteClick = (receiptId) => {
+    console.log('Attempting to delete receipt with ID:', receiptId);
+    if (receiptId) {
+      onDelete(receiptId);
+    } else {
+      console.error('Receipt ID is undefined');
+    }
+  };
+
   if (!data || data.length === 0) {
     return <p>No receipt data available.</p>;
   }
@@ -192,7 +201,7 @@ function ReceiptDisplay({ data, onEdit, onDelete, layout }) {
                   {expandedReceiptIndex === index ? 'Show less' : 'Show more'}
                 </button>
                 <button onClick={() => handleEditClick(receipt)}>Edit</button>
-                <button onClick={() => onDelete(receipt.id)}>Delete</button>
+                <button onClick={() => handleDeleteClick(receipt._id)}>Delete</button>
               </div>
             </div>
           ))}

@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handleRegister = async (event) => {
     event.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5001/register', {
+      const response = await fetch('http://localhost:5001/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,6 +23,7 @@ function Register() {
 
       const data = await response.json();
       console.log('Registration successful:', data);
+      setRegistrationSuccess(true);
     } catch (error) {
       console.error('Error during registration:', error);
     }
@@ -42,6 +44,7 @@ function Register() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button type="submit">Register</button>
+      {registrationSuccess && <p>Registration successful!</p>}
     </form>
   );
 }

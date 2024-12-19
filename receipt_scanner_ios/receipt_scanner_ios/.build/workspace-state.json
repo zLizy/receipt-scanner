@@ -1,0 +1,95 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "dotenv",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/swiftpackages/DotEnv.git",
+          "name" : "DotEnv"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "1f15bb9de727d694af1d003a1a5d7a553752850f",
+            "version" : "3.0.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "DotEnv"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-atomics",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-atomics.git",
+          "name" : "swift-atomics"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
+            "version" : "1.2.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-atomics"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-collections",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-collections.git",
+          "name" : "swift-collections"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "671108c96644956dddcd89dd59c203dcdb36cec7",
+            "version" : "1.1.4"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-collections"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-nio",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-nio.git",
+          "name" : "swift-nio"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "dca6594f65308c761a9c409e09fbf35f48d50d34",
+            "version" : "2.77.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-nio"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-system",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-system.git",
+          "name" : "swift-system"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "c8a44d836fe7913603e246acab7c528c2e780168",
+            "version" : "1.4.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-system"
+      }
+    ]
+  },
+  "version" : 6
+}

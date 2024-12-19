@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		627CF0FE2D02622800D9CF63 /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = 627CF0FD2D02622800D9CF63 /* DGCharts */; };
+		627CF1042D0262C300D9CF63 /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 627CF1032D0262C300D9CF63 /* Algorithms */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		627CF0BC2D0249A800D9CF63 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -23,15 +28,149 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		627CF0FB2D0261EA00D9CF63 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		627CF0AB2D0249A500D9CF63 /* receipt_scanner_ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = receipt_scanner_ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		627CF0AB2D0249A500D9CF63 /* bonje.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bonje.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		627CF0BB2D0249A800D9CF63 /* receipt_scanner_iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = receipt_scanner_iosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		627CF0C52D0249A800D9CF63 /* receipt_scanner_iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = receipt_scanner_iosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		628164922D0C895D00852B71 /* Exceptions for "receipt_scanner_ios" folder in "receipt_scanner_ios" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				.build/checkouts/DotEnv,
+				".build/checkouts/swift-atomics",
+				".build/checkouts/swift-collections",
+				".build/checkouts/swift-nio",
+				".build/checkouts/swift-system",
+				".build/repositories/DotEnv-bc3091e2/config",
+				".build/repositories/DotEnv-bc3091e2/description",
+				".build/repositories/DotEnv-bc3091e2/HEAD",
+				".build/repositories/DotEnv-bc3091e2/hooks/applypatch-msg.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/commit-msg.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/fsmonitor-watchman.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/post-update.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-applypatch.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-commit.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-merge-commit.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-push.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-rebase.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/pre-receive.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/prepare-commit-msg.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/push-to-checkout.sample",
+				".build/repositories/DotEnv-bc3091e2/hooks/update.sample",
+				".build/repositories/DotEnv-bc3091e2/info/exclude",
+				".build/repositories/DotEnv-bc3091e2/objects/pack/pack-40b06d6c48f2e84ab16fc9e1e381fa1c3d867de2.idx",
+				".build/repositories/DotEnv-bc3091e2/objects/pack/pack-40b06d6c48f2e84ab16fc9e1e381fa1c3d867de2.pack",
+				".build/repositories/DotEnv-bc3091e2/packed-refs",
+				".build/repositories/swift-atomics-7429e549/config",
+				".build/repositories/swift-atomics-7429e549/description",
+				".build/repositories/swift-atomics-7429e549/HEAD",
+				".build/repositories/swift-atomics-7429e549/hooks/applypatch-msg.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/commit-msg.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/fsmonitor-watchman.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/post-update.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-applypatch.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-commit.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-merge-commit.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-push.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-rebase.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/pre-receive.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/prepare-commit-msg.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/push-to-checkout.sample",
+				".build/repositories/swift-atomics-7429e549/hooks/update.sample",
+				".build/repositories/swift-atomics-7429e549/info/exclude",
+				".build/repositories/swift-atomics-7429e549/objects/pack/pack-247f704eaf2ebbcae4751adfbaae706854bdc171.idx",
+				".build/repositories/swift-atomics-7429e549/objects/pack/pack-247f704eaf2ebbcae4751adfbaae706854bdc171.pack",
+				".build/repositories/swift-atomics-7429e549/packed-refs",
+				".build/repositories/swift-collections-9a58d5cf/config",
+				".build/repositories/swift-collections-9a58d5cf/description",
+				".build/repositories/swift-collections-9a58d5cf/HEAD",
+				".build/repositories/swift-collections-9a58d5cf/hooks/applypatch-msg.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/commit-msg.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/fsmonitor-watchman.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/post-update.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-applypatch.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-commit.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-merge-commit.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-push.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-rebase.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/pre-receive.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/prepare-commit-msg.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/push-to-checkout.sample",
+				".build/repositories/swift-collections-9a58d5cf/hooks/update.sample",
+				".build/repositories/swift-collections-9a58d5cf/info/exclude",
+				".build/repositories/swift-collections-9a58d5cf/objects/pack/pack-8d243400b2420245163e4f1f235639a1a134e318.idx",
+				".build/repositories/swift-collections-9a58d5cf/objects/pack/pack-8d243400b2420245163e4f1f235639a1a134e318.pack",
+				".build/repositories/swift-collections-9a58d5cf/packed-refs",
+				".build/repositories/swift-nio-a9bb6d62/config",
+				".build/repositories/swift-nio-a9bb6d62/description",
+				".build/repositories/swift-nio-a9bb6d62/HEAD",
+				".build/repositories/swift-nio-a9bb6d62/hooks/applypatch-msg.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/commit-msg.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/fsmonitor-watchman.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/post-update.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-applypatch.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-commit.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-merge-commit.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-push.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-rebase.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/pre-receive.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/prepare-commit-msg.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/push-to-checkout.sample",
+				".build/repositories/swift-nio-a9bb6d62/hooks/update.sample",
+				".build/repositories/swift-nio-a9bb6d62/info/exclude",
+				".build/repositories/swift-nio-a9bb6d62/objects/pack/pack-442ac0427208c4aa35a73785b2c1e7d4d70d0820.idx",
+				".build/repositories/swift-nio-a9bb6d62/objects/pack/pack-442ac0427208c4aa35a73785b2c1e7d4d70d0820.pack",
+				".build/repositories/swift-nio-a9bb6d62/packed-refs",
+				".build/repositories/swift-system-5815d4b7/config",
+				".build/repositories/swift-system-5815d4b7/description",
+				".build/repositories/swift-system-5815d4b7/HEAD",
+				".build/repositories/swift-system-5815d4b7/hooks/applypatch-msg.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/commit-msg.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/fsmonitor-watchman.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/post-update.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-applypatch.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-commit.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-merge-commit.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-push.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-rebase.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/pre-receive.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/prepare-commit-msg.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/push-to-checkout.sample",
+				".build/repositories/swift-system-5815d4b7/hooks/update.sample",
+				".build/repositories/swift-system-5815d4b7/info/exclude",
+				".build/repositories/swift-system-5815d4b7/objects/pack/pack-7d3a13bd3bf4cf9b3daef26987199233c7872961.idx",
+				".build/repositories/swift-system-5815d4b7/objects/pack/pack-7d3a13bd3bf4cf9b3daef26987199233c7872961.pack",
+				".build/repositories/swift-system-5815d4b7/packed-refs",
+				".build/workspace-state.json",
+				.env,
+				Assets.xcassets,
+				"Preview Content/Preview Assets.xcassets",
+			);
+			target = 627CF0AA2D0249A500D9CF63 /* receipt_scanner_ios */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		627CF0AD2D0249A500D9CF63 /* receipt_scanner_ios */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				628164922D0C895D00852B71 /* Exceptions for "receipt_scanner_ios" folder in "receipt_scanner_ios" target */,
+			);
 			path = receipt_scanner_ios;
 			sourceTree = "<group>";
 		};
@@ -52,6 +191,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				627CF1042D0262C300D9CF63 /* Algorithms in Frameworks */,
+				627CF0FE2D02622800D9CF63 /* DGCharts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +219,7 @@
 				627CF0AD2D0249A500D9CF63 /* receipt_scanner_ios */,
 				627CF0BE2D0249A800D9CF63 /* receipt_scanner_iosTests */,
 				627CF0C82D0249A800D9CF63 /* receipt_scanner_iosUITests */,
+				627CF1012D02628D00D9CF63 /* Frameworks */,
 				627CF0AC2D0249A500D9CF63 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,11 +227,18 @@
 		627CF0AC2D0249A500D9CF63 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				627CF0AB2D0249A500D9CF63 /* receipt_scanner_ios.app */,
+				627CF0AB2D0249A500D9CF63 /* bonje.app */,
 				627CF0BB2D0249A800D9CF63 /* receipt_scanner_iosTests.xctest */,
 				627CF0C52D0249A800D9CF63 /* receipt_scanner_iosUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		627CF1012D02628D00D9CF63 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,6 +251,7 @@
 				627CF0A72D0249A500D9CF63 /* Sources */,
 				627CF0A82D0249A500D9CF63 /* Frameworks */,
 				627CF0A92D0249A500D9CF63 /* Resources */,
+				627CF0FB2D0261EA00D9CF63 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -112,9 +262,11 @@
 			);
 			name = receipt_scanner_ios;
 			packageProductDependencies = (
+				627CF0FD2D02622800D9CF63 /* DGCharts */,
+				627CF1032D0262C300D9CF63 /* Algorithms */,
 			);
 			productName = receipt_scanner_ios;
-			productReference = 627CF0AB2D0249A500D9CF63 /* receipt_scanner_ios.app */;
+			productReference = 627CF0AB2D0249A500D9CF63 /* bonje.app */;
 			productType = "com.apple.product-type.application";
 		};
 		627CF0BA2D0249A800D9CF63 /* receipt_scanner_iosTests */ = {
@@ -195,6 +347,10 @@
 			);
 			mainGroup = 627CF0A22D0249A500D9CF63;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				627CF0FC2D02622800D9CF63 /* XCRemoteSwiftPackageReference "Charts" */,
+				627CF1022D0262C300D9CF63 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 627CF0AC2D0249A500D9CF63 /* Products */;
 			projectDirPath = "";
@@ -396,6 +552,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"receipt_scanner_ios/Preview Content\"";
+				DEVELOPMENT_TEAM = GJJ2243RCM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -409,7 +566,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "computer.example.receipt-scanner-ios";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = bonje;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -424,6 +581,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"receipt_scanner_ios/Preview Content\"";
+				DEVELOPMENT_TEAM = GJJ2243RCM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -437,7 +595,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "computer.example.receipt-scanner-ios";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = bonje;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -552,6 +710,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		627CF0FC2D02622800D9CF63 /* XCRemoteSwiftPackageReference "Charts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielgindi/Charts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.0;
+			};
+		};
+		627CF1022D0262C300D9CF63 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		627CF0FD2D02622800D9CF63 /* DGCharts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 627CF0FC2D02622800D9CF63 /* XCRemoteSwiftPackageReference "Charts" */;
+			productName = DGCharts;
+		};
+		627CF1032D0262C300D9CF63 /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 627CF1022D0262C300D9CF63 /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 627CF0A32D0249A500D9CF63 /* Project object */;
 }

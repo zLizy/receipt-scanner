@@ -36,7 +36,7 @@ function App() {
   const [authToken, setAuthToken] = useState(null);
   const [view, setView] = useState('category');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [timePeriod, setTimePeriod] = useState('daily');
+  const [timePeriod, setTimePeriod] = useState('last30days');
   const [chartType, setChartType] = useState('pie');
   const [barPlotType, setBarPlotType] = useState('default');
   const [showLine, setShowLine] = useState(false);
@@ -167,20 +167,19 @@ function App() {
     return { labels, data };
   };
 
-  const handleEditReceipt = (updatedReceipt) => {
-    setReceiptData((prevData) =>
-      prevData.map((receipt) =>
-        receipt.id === updatedReceipt.id ? updatedReceipt : receipt
-      )
-    );
-  };
 
   const { labels, data } = view === 'category' ? getCategoryData() : getFilteredSubCategoryData();
 
   const onEdit = async (updatedReceipt) => {
     try {
-      console.log('Updating receipt with ID:', updatedReceipt.id);
-      const response = await fetch('http://localhost:5001/api/update-receipts/' + updatedReceipt.id, {
+      // Check if the updatedReceipt has a valid id
+      if (!updatedReceipt._id) {
+        console.error('Updated receipt is missing an ID:', updatedReceipt);
+        return;
+      }
+
+      console.log('Updating receipt.');
+      const response = await fetch('http://localhost:5001/api/update-receipts/' + updatedReceipt._id, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -194,14 +193,13 @@ function App() {
         throw new Error(`Failed to update receipt: ${errorText}`);
       }
 
-      const updatedData = await response.json();
       setReceiptData((prevData) =>
         prevData.map((receipt) =>
-          receipt.id === updatedData.id ? updatedData : receipt
+          receipt._id === updatedReceipt._id ? updatedReceipt : receipt
         )
       );
 
-      console.log('Receipt updated successfully:', updatedData);
+      // console.log('Receipt updated successfully:', updatedData);
     } catch (error) {
       console.error('Error updating receipt:', error);
     }
@@ -209,7 +207,7 @@ function App() {
 
   const handleDelete = async (receiptId) => {
     try {
-      console.log('Deleting receipt with ID:', receiptId);
+      console.log('Deleting receipt');
       const response = await fetch(`http://localhost:5001/api/delete-receipts/${receiptId}`, {
         method: 'DELETE',
         headers: {
@@ -222,8 +220,7 @@ function App() {
         throw new Error(`Failed to delete receipt: ${errorText}`);
       }
 
-      // Update local state to remove the deleted receipt
-      setReceiptData((prevData) => prevData.filter(receipt => receipt.id !== receiptId));
+      setReceiptData((prevData) => prevData.filter(receipt => receipt._id !== receiptId));
 
       console.log('Receipt deleted successfully');
     } catch (error) {
@@ -240,14 +237,22 @@ function App() {
     const now = new Date();
     let startDate;
 
-    if (period === 'last30days') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
-    } else if (period === 'last3months') {
-      startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-    } else if (period === 'last6months') {
-      startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-    } else if (period === 'last12months') {
-      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    switch (period) {
+      case 'last30days':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        break;
+      case 'last3months':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+        break;
+      case 'last6months':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+        break;
+      case 'last12months':
+        startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        break;
+      default:
+        console.error('Invalid time period:', period);
+        return { labels: [], data: [] }; // Return empty data to prevent further errors
     }
 
     console.log('Start Date:', startDate);
@@ -268,6 +273,11 @@ function App() {
 
     receiptData.forEach(receipt => {
       const date = new Date(receipt.date);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid receipt date:', receipt.date);
+        return; // Skip invalid dates
+      }
+
       let key;
       if (period === 'last30days') {
         key = date.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -386,6 +396,10 @@ function App() {
 
     receiptData.forEach(receipt => {
       const date = new Date(receipt.date);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid receipt date:', receipt.date);
+        return; // Skip invalid dates
+      }
       const key = date.toISOString().split('T')[0].slice(0, 7); // YYYY-MM
       const category = receipt.category;
       const total = parseFloat(receipt.total) || 0;

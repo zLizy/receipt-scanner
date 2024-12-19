@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 // Register the necessary components
 ChartJS.register(
@@ -17,13 +18,20 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 function BarChart({ labels, datasets = [], stacked }) {
+  // Filter out zero values from datasets
+  const filteredDatasets = datasets.map(dataset => ({
+    ...dataset,
+    data: dataset.data.map((value, index) => (value !== 0 ? value : null)),
+  }));
+
   const data = {
     labels,
-    datasets,
+    datasets: filteredDatasets,
   };
 
   const options = {
@@ -36,6 +44,12 @@ function BarChart({ labels, datasets = [], stacked }) {
         display: true,
         text: 'Spending Over Time',
       },
+      datalabels: {
+        color: 'lightgrey',
+        display: function(context) {
+          return context.dataset.data[context.dataIndex] !== 0;
+        }
+      }
     },
     scales: {
       x: {
@@ -43,6 +57,11 @@ function BarChart({ labels, datasets = [], stacked }) {
       },
       y: {
         stacked: stacked,
+        ticks: {
+          callback: function(value) {
+            return value !== 0 ? value : null; // Hide zero values on y-axis
+          },
+        },
       },
     },
   };

@@ -13,18 +13,19 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-def ocr(file_path, api_key=None, model="Llama-3.2-90B-Vision"):
+def ocr(file_path, language, country, api_key=None, model="Llama-3.2-90B-Vision"):
     # Get the API key from environment if not provided
     if api_key is None:
         api_key = os.getenv("TOGETHER_API_KEY")
     
     vision_llm = "meta-llama/Llama-Vision-Free" if model == "free" else f"meta-llama/{model}-Instruct-Turbo"
     client = Together(api_key=api_key)
-    final_markdown = get_json(client, vision_llm, file_path)
+    final_markdown = get_json(client, vision_llm, file_path, language, country)
     return final_markdown
 
-def get_json(client, vision_llm, file_path):
-    system_prompt = """Extract the following information from the provided image and format it as JSON suitable for a PostgreSQL database:
+def get_json(client, vision_llm, file_path, language, country):
+    system_prompt = f"""Extract the following information from the provided image and format it as JSON suitable for a PostgreSQL database:
+    (A user has some settings in terms of language: {language} and country: {country}. Use this information as an indicator/suggestion to identify the content of the receipt.)
     - date: The date of the transaction in the format 'YYYY-MM-DD'.
     - items: A JSON array of items purchased, each with 'name', 'quantity', and 'price', and 'subcategory' (e.g., food, drink, furniture, etc.). If the subcategory is not known, set it to 'Unknown'. (Note, sometimes the items are in capital letters, so make sure to lowercase them)
     - total: The total amount spent as a number.
@@ -41,10 +42,11 @@ def get_json(client, vision_llm, file_path):
         Fruit (e.g., apples, bananas)
     2. Restaurant
         Subcategories:
-        Fast Food (e.g., burgers, fries)
+        Brunch (e.g., sunny eggs, pancakes)
         Fine Dining (e.g., steak, seafood)
         Casual Dining (e.g., pasta, pizza)
         Cafes (e.g., coffee, pastries)
+        Beverages (e.g., juice, soda)
     3. Shopping
         Subcategories:
         Clothing (e.g., shirts, pants)
